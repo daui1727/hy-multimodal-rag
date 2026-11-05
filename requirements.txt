@@ -1,0 +1,19 @@
+# requirements.txt
+langchain>=1.0 # LLM 앱을 만드는 핵심 프레임워크 (1.0 이상 버전)
+langchain-classic>=1.0  # MultiVectorRetriever. langchain 1.x에서 분리됨 (필수)
+langchain-openai  # LangChain에서 OpenAI 모델(ChatOpenAI, OpenAIEmbeddings)을 쓰게 해 주는 연결 패키지
+langchain-community # 커뮤니티가 만든 각종 외부 도구·로더 연결 모음
+langchain-chroma # LangChain에서 Chroma 벡터 DB를 쓰게 해 주는 연결 패키지
+langchain-experimental # 실험실, 아직 정식이 아닌 실험 기능 모음
+langchain-ollama # 로컬 Ollama 모델(Llama 3.1, LLaVA)을 LangChain에서 쓰게 해 주는 연결 패키지
+unstructured[all-docs] # 여러 포맷이 정해져 있지 않은 문서들에 대해 표준화시켜 구분해주는 PDF 등 문서를 텍스트·표·이미지로 분리하는 파서
+unstructured-inference>=1.6.12,<2  # Windows+Python 3.11에서는 all-docs가 이 패키지를 설치하지 않아 명시 (partition_pdf hi_res에 필수)
+pillow # 이미지 파일을 열고 변환·크기 조정하는 라이브러리
+pydantic # 데이터 형식을 검증·관리하는 라이브러리 (LangChain 내부에서 사용). 빠르고 확장성도 좋다.
+lxml # HTML·XML을 빠르게 파싱하는 라이브러리 (표를 HTML로 다룰 때 사용)
+matplotlib # 그래프·이미지를 그려서 보여주는 시각화 라이브러리
+chromadb # 임베딩을 저장하고 유사도로 검색하는 벡터 DB 본체
+tiktoken # OpenAI 토크나이저. 텍스트를 토큰 단위로 세고 자를 때 사용
+python-dotenv # .env 파일의 API 키를 환경변수로 불러오는 도구
+ipykernel # 가상환경을 Jupyter 노트북 커널로 등록·실행하게 해 주는 패키지
+jupyterlab # 브라우저에서 노트북을 열고 실행하는 Jupyter 편집기

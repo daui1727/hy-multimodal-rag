@@ -1,0 +1,17 @@
+# 가상환경 (수백 MB의 가상환경이 통째로 올라감)
+.venv/
+
+# 환경변수 (API 키 노출 방지)
+.env
+
+# 추출 이미지 (용량 폭증 방지)
+data/figures/
+
+# 벡터 DB 파일이 올라감
+chroma_db/
+
+# 파이썬 실행 부산물이 섞임
+__pycache__/
+*.py[cod]
+# 노트북 자동 저장본이 섞임
+.ipynb_checkpoints/
