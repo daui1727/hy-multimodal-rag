@@ -6,6 +6,7 @@
 
 # 추출 이미지 (용량 폭증 방지)
 data/figures/
+data/processed/
 
 # 벡터 DB 파일이 올라감
 chroma_db/
