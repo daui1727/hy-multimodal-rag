@@ -289,8 +289,8 @@ tesseract -v   # 버전이 나오면 Tesseract OK
 ### 설치
 
 ```bash
-git clone https://github.com/<!-- TODO: 계정 -->/multimodal-rag.git
-cd multimodal-rag
+git clone https://github.com/daui1727/hy-multimodal-rag.git
+cd hy-multimodal-rag
 
 python -m venv .venv
 # macOS / Linux
