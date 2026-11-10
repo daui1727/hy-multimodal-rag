@@ -6,7 +6,7 @@ PDF 한 개를 Unstructured `partition_pdf(hi_res)`로 분석해
 텍스트 블록 · 표 · 이미지로 나누고, 다음 단계(요약)에서 쓸 수 있게 저장한다.
 
 입력 : PDF 파일 (기본값 data/economy_FFF.pdf)
-출력 : - data/figures/*.jpg           추출된 이미지 파일
+출력 : - data/figures/*.jpg           추출된 그림(figure-*) · 표(table-*) 이미지 파일
        - data/processed/extracted.pkl {"texts", "tables", "texts_2k_token"}
 
 [처리 흐름]
@@ -43,7 +43,10 @@ def extract_pdf_elements(pdf_path, image_dir):
         filename=str(pdf_path),
         strategy="hi_res",                          # 레이아웃 분석 모델로 표·그림 영역까지 탐지
         infer_table_structure=True,                 # 표의 행·열 구조를 추론
-        extract_image_block_types=["Image"],        # 그림 영역을 이미지 파일로 잘라냄
+        # 그림과 표 영역을 이미지 파일로 잘라냄 (figure-*.jpg, table-*.jpg)
+        # 표를 이미지로도 저장하는 이유: 텍스트로 뽑으면 2단 머리글("2025" 아래 "연간 · 4/4")이
+        # 한 줄로 뭉개져 연도 열을 잘못 읽는다. 이미지는 머리글 구조가 그대로 남는다.
+        extract_image_block_types=["Image", "Table"],
         extract_image_block_output_dir=str(image_dir),  # 이미지 저장 경로를 명시
         chunking_strategy="by_title",               # 제목 단위로 본문을 묶음
         max_characters=4000,                        # 한 블록의 최대 글자 수
