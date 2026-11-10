@@ -109,11 +109,11 @@ PDF ──① 추출──▶ extracted.pkl ──② 요약──▶ summaries.
 | 단계 | 날짜 | 노트북 | 한 일 | 결과물 |
 |---|---|---|---|---|
 | 0. 개념·환경 | 11/4 | — | 멀티모달 RAG 개념 정리, Poppler·Tesseract 설치, 가상환경·패키지 구성 | `requirements.txt`, `requirements.lock.txt` |
-| 1. Parser 탐색 | 11/4 | `02_unstructured_실습_학생용.ipynb` | Unstructured Parser의 Element 카테고리와 파싱 전략(규칙 기반 vs 모델 기반 `hi_res`) 실습 | — |
-| 2. 데이터 추출 | 11/4 | `01_데이터추출__연습본.ipynb` | `partition_pdf`로 텍스트·표·이미지 분리, 텍스트 토큰 분할 | `data/figures/` |
-| 3. 추출 직접 작성 | 11/5 | `01_데이터추출_모닝학습_시험지.ipynb` | 주석만 보고 추출 코드를 처음부터 작성, 요소 타입 집계, 결과 저장 | `data/processed/extracted.pkl` |
-| 4. 요약 생성 | 11/5 | `02_요약생성_학습.ipynb` | LCEL 요약 체인, Base64 인코딩, VLM 이미지 요약, 품질 검증, 토큰 측정 | `data/processed/summaries.pkl` |
-| 5. 검색기·최종 체인 | 11/6 | `03_임베딩_최종체인_연습.ipynb` | 요약→Chroma, 원본→InMemoryStore를 `doc_id`로 연결, 멀티모달 체인, 텍스트 RAG와 Before/After 비교 | `screenshot.png` |
+| 1. Parser 탐색 | 11/4 | — (별도 실습, 저장소 미포함) | Unstructured Parser의 Element 카테고리와 파싱 전략(규칙 기반 vs 모델 기반 `hi_res`) 실습 | — |
+| 2. 데이터 추출 | 11/4~11/5 | `01_데이터추출__연습본.ipynb` | `partition_pdf`로 텍스트·표·이미지 분리, 요소 타입 집계, 텍스트 토큰 분할, 결과 저장. 주석만 보고 코드를 처음부터 다시 작성하는 연습도 함께 진행 | `data/figures/`, `data/processed/extracted.pkl` |
+| 3. 요약 생성 | 11/5 | `02_요약생성_학습.ipynb` | LCEL 요약 체인, Base64 인코딩, VLM 이미지 요약, 품질 검증, 토큰 측정 | `data/processed/summaries.pkl` |
+| 4. 검색기·최종 체인 | 11/6 | `03_임베딩_최종체인_연습.ipynb` | 요약→Chroma, 원본→InMemoryStore를 `doc_id`로 연결, 멀티모달 체인, 텍스트 RAG와 Before/After 비교 | `screenshot.png` |
+| 5. 모듈화 | 11/10 | `src/*.py` | 노트북 01~03의 기능을 `extract` · `summarize` · `retriever` 함수로 정리, 터미널에서 단계별 실행 | `src/extract.py`, `src/summarize.py`, `src/retriever.py` |
 
 ### 4-1. 개념 정리 — 일반 RAG vs 멀티모달 RAG
 
@@ -244,25 +244,22 @@ multimodal-rag/
 ├── requirements.txt                      # 직접 관리하는 의존성 목록
 ├── requirements.lock.txt                 # 버전 고정 목록 (재현용)
 ├── README.md
-├── 01_데이터추출__연습본.ipynb             # ① 추출 수업 실습
-├── 01_데이터추출__연습본_선생님.ipynb       # ① 추출 강사 참고본
-├── 01_데이터추출_모닝학습_시험지.ipynb      # ① 추출 직접 작성 → extracted.pkl
-├── 02_unstructured_실습_학생용.ipynb       # Unstructured Parser 탐색
+├── 01_데이터추출__연습본.ipynb             # ① PDF 추출 → extracted.pkl
 ├── 02_요약생성_학습.ipynb                  # ② 텍스트·표·이미지 요약 → summaries.pkl
 ├── 03_임베딩_최종체인_연습.ipynb            # ③ 검색기 + 최종 체인 + Before/After
 ├── screenshot.png                        # Before/After 실행 결과 캡처
 ├── data/
 │   ├── economy_FFF.pdf                   # 원본 PDF (한국은행 공개 보도자료)
 │   ├── figures/                          # 추출 이미지 41장 (Git 제외, 실행 시 생성)
-│   └── processed/
+│   └── processed/                        # (Git 제외, 01·02 실행 시 생성)
 │       ├── extracted.pkl                 # texts, tables, texts_2k_token
 │       └── summaries.pkl                 # text/table/image 요약 + img_base64_list
 ├── notebooks/
 │   └── Multi_modal_RAG.ipynb             # 통합 노트북 (작성 중)
-└── src/                                  # 모듈화 예정 (현재 빈 파일)
-    ├── extract.py
-    ├── summarize.py
-    └── retriever.py
+└── src/                                  # 노트북 01~03을 함수로 정리한 모듈
+    ├── extract.py                        # ① PDF 추출 → extracted.pkl
+    ├── summarize.py                      # ② 텍스트·표·이미지 요약 → summaries.pkl
+    └── retriever.py                      # ③ 검색기 + 멀티모달 체인 + 텍스트 RAG 비교
 ```
 
 ---
@@ -338,10 +335,20 @@ cp .env.example .env      # Windows: copy .env.example .env
 
 1. VS Code에서 프로젝트 폴더를 열고, 노트북 오른쪽 위 **커널 선택**에서 `Python (multimodal-rag)`를 고릅니다.
 2. 아래 순서대로 노트북을 엽니다. 각 노트북은 앞 노트북이 저장한 `.pkl`을 불러오므로 **순서를 지켜야** 합니다.
-   1. `01_데이터추출_모닝학습_시험지.ipynb` → `data/processed/extracted.pkl` 생성
+   1. `01_데이터추출__연습본.ipynb` → `data/processed/extracted.pkl` 생성
    2. `02_요약생성_학습.ipynb` → `data/processed/summaries.pkl` 생성
    3. `03_임베딩_최종체인_연습.ipynb` → 검색기 구성, 질의응답, Before/After 비교
 3. 각 노트북은 맨 위 셀부터 `Shift + Enter`로 **순서대로** 실행합니다. 셀을 건너뛰면 앞에서 만든 변수가 없어 에러가 납니다.
+
+**노트북 없이 터미널로 실행하기** (`src/` 모듈, 프로젝트 루트에서)
+
+```bash
+python src/extract.py      # ① 추출 → extracted.pkl (2~3분)
+python src/summarize.py    # ② 요약 → summaries.pkl (API 비용 발생)
+python src/retriever.py "24년말 대비 26년 1분기의 누적 평가이익을 알려줘"   # ③ Before/After 답변 출력
+```
+
+①·② 결과(pkl)가 이미 있으면 ③만 실행하면 됩니다.
 
 ### 7-2. 노트북 단계별 안내
 
@@ -351,7 +358,7 @@ cp .env.example .env      # Windows: copy .env.example .env
 |---|---|---|---|
 | 0. 환경 검증 | Python·Poppler·Tesseract·패키지 확인 | 모든 항목 `OK` | 즉시 |
 | 1. 데이터 추출 | `partition_pdf`로 텍스트·표·이미지 분리 | `data/figures/`에 이미지 생성, `len(texts) > 0` | 2~3분 (첫 실행은 모델 다운로드로 더 걸림) |
-| 2. API 키 확인 | `.env` 로드, 앞 7자·뒤 4자만 출력, 유효성 검사 | `sk-proj...xxxx` 형태 출력, 오류 없음 | 즉시 |
+| 2. API 키 확인 | `.env` 로드, 로드 여부만 출력 (키 값 미출력), 유효성 검사 | `API 키 로드 완료` 출력, 오류 없음 | 즉시 |
 | 3. 텍스트·표 요약 | `gpt-4o-mini`로 청크·표 요약 | `text_summaries[0]`에 한국어 요약문 출력 | 약 22초 |
 | 4. 이미지 요약 | 이미지를 Base64로 바꿔 VLM으로 요약 | `image_summaries[0]`이 실제 그림 내용과 일치 | 약 2분 (41장) |
 | 5. 검색기 구성 | 요약은 Chroma, 원본은 InMemoryStore에 같은 `doc_id`로 저장 | 벡터 DB 요약 수 64 (18+5+41) | 수 초 |
@@ -481,8 +488,8 @@ unstructured-inference>=1.6.12,<2
 ## 9. 보안 처리
 
 - API 키는 `.env`에만 저장하고 `python-dotenv`로 로드합니다. 코드·노트북에 키 문자열을 직접 쓰지 않습니다.
-- 노트북에서 키를 확인할 때는 **앞 7자와 뒤 4자만** 출력하고, `OpenAI().models.list()`로 유효성만 검사합니다. 화면 공유나 캡처로 키 전체가 노출되는 것을 막기 위해서입니다.
-- 저장소에는 키가 비어 있는 `.env.example`만 포함합니다.
+- 노트북에서는 키 값을 **일부도 출력하지 않고** "API 키 로드 완료"만 출력하며, `OpenAI().models.list()`로 유효성만 검사합니다. 화면 공유나 캡처로 키가 노출되는 것을 막기 위해서입니다.
+- 저장소에는 예시 값만 들어 있는 `.env.example`만 포함합니다.
 - `.gitignore`로 제외하는 항목:
 
 | 항목 | 이유 |
@@ -490,11 +497,10 @@ unstructured-inference>=1.6.12,<2
 | `.env` | API 키 |
 | `.venv/` | 가상환경 (용량 큼, OS마다 다름) |
 | `data/figures/` | 추출 이미지 (실행 시 재생성 가능, 용량 큼) |
-| `*.pdf` | 원본 문서 (용량·저작권) |
+| `data/processed/` | 추출·요약 결과 pkl (실행 시 재생성 가능, 요약 pkl에 Base64 이미지가 들어 있어 용량 큼) |
 | `chroma_db/` | 벡터 DB (실행 시 재생성 가능) |
-| `__pycache__/`, `*.py[cod]` | 실행 부산물 |
+| `__pycache__/`, `*.py[cod]` | 파이썬 실행 부산물 |
 | `.ipynb_checkpoints/` | 노트북 자동 저장본 |
-| `.vscode/`, `.idea/`, `.DS_Store` | 개인 에디터·OS 설정 |
 
 ---
 
