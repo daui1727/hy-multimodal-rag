@@ -27,6 +27,15 @@
 
 ## 2. 아키텍처
 
+![멀티모달 RAG 아키텍처](assets/diagram.png)
+
+- **초록(원본):** 추출한 텍스트·표·이미지. 요약을 거치지 않고 **점선**으로 InMemoryStore에 그대로 저장되며, 답변 생성에 쓰입니다.
+- **보라(요약):** LLM·VLM이 만든 요약. Chroma에 임베딩되어 **검색**에 쓰입니다.
+- **`doc_id`:** 요약과 원본을 잇는 번호표. 질문으로 찾은 요약 상위 4개의 `doc_id`로 원본을 꺼내 `gpt-4o-mini`에 넘깁니다.
+
+<details>
+<summary>Mermaid 버전 (텍스트 다이어그램)</summary>
+
 ```mermaid
 flowchart LR
     PDF[(PDF 원본<br/>21p)]
@@ -64,6 +73,8 @@ flowchart LR
     TS & TBS & IS --> VS
     T & TB & IMG -. 원본 그대로 .-> DS
 ```
+
+</details>
 
 단계 사이의 결과는 `pickle`로 저장해 다음 노트북에서 이어 씁니다.
 
@@ -113,7 +124,7 @@ PDF ──① 추출──▶ extracted.pkl ──② 요약──▶ summaries.
 | 1. Parser 탐색 | 11/4 | — (별도 실습, 저장소 미포함) | Unstructured Parser의 Element 카테고리와 파싱 전략(규칙 기반 vs 모델 기반 `hi_res`) 실습 | — |
 | 2. 데이터 추출 | 11/4~11/5 | `01_데이터추출__연습본.ipynb` | `partition_pdf`로 텍스트·표·이미지 분리, 요소 타입 집계, 텍스트 토큰 분할, 결과 저장. 주석만 보고 코드를 처음부터 다시 작성하는 연습도 함께 진행 | `data/figures/`, `data/processed/extracted.pkl` |
 | 3. 요약 생성 | 11/5 | `02_요약생성_학습.ipynb` | LCEL 요약 체인, Base64 인코딩, VLM 이미지 요약, 품질 검증, 토큰 측정 | `data/processed/summaries.pkl` |
-| 4. 검색기·최종 체인 | 11/6 | `03_임베딩_최종체인_연습.ipynb` | 요약→Chroma, 원본→InMemoryStore를 `doc_id`로 연결, 멀티모달 체인, 텍스트 RAG와 Before/After 비교 | `screenshot.png` |
+| 4. 검색기·최종 체인 | 11/6 | `03_임베딩_최종체인_연습.ipynb` | 요약→Chroma, 원본→InMemoryStore를 `doc_id`로 연결, 멀티모달 체인, 텍스트 RAG와 Before/After 비교 | `assets/screenshot.png` |
 | 5. 모듈화 | 11/10 | `src/*.py` | 노트북 01~03의 기능을 `extract` · `summarize` · `retriever` 함수로 정리, 터미널에서 단계별 실행 | `src/extract.py`, `src/summarize.py`, `src/retriever.py` |
 | 6. 표 이미지 보강 | 11/10 | `src/extract.py` | 표 질문 오답(연도 열 밀림) 원인 분석 → 표도 이미지로 잘라 VLM 요약·원본으로 추가, 질의응답 5건 재실행 | `data/figures/table-*.jpg` 5장 |
 
@@ -283,8 +294,10 @@ multimodal-rag/
 ├── 01_데이터추출__연습본.ipynb             # ① PDF 추출 → extracted.pkl
 ├── 02_요약생성_학습.ipynb                  # ② 텍스트·표·이미지 요약 → summaries.pkl
 ├── 03_임베딩_최종체인_연습.ipynb            # ③ 검색기 + 최종 체인 + Before/After
-├── screenshot.png                        # Before/After 실행 결과 캡처
-├── assets/                               # README용 추출 이미지 예시 2장 (figures/에서 복사)
+├── assets/                               # README용 이미지
+│   ├── diagram.png                       # 아키텍처 다이어그램 (draw.io로 직접 작도)
+│   ├── screenshot.png                    # Before/After 실행 결과 캡처
+│   └── figure-*.jpg                      # 추출 이미지 예시 2장 (data/figures/에서 복사)
 ├── data/
 │   ├── economy_FFF.pdf                   # 원본 PDF (한국은행 공개 보도자료)
 │   ├── figures/                          # 그림 41장 + 표 이미지 5장 (Git 제외, 실행 시 생성)
@@ -552,7 +565,7 @@ unstructured-inference>=1.6.12,<2
 
 **질문:** 24년말 대비 26년 1분기의 누적 평가이익을 알려줘
 
-![Before/After 실행 결과](screenshot.png)
+![Before/After 실행 결과](assets/screenshot.png)
 
 | | 답변 |
 |---|---|
